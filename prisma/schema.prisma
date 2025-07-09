@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String?  @unique
+  name      String
+  phone     String?
+  role      UserRole @default(OPERATOR)
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  // Relations
+  createdBy       String?
+  creator         User?           @relation("UserCreator", fields: [createdBy], references: [id])
+  createdUsers    User[]          @relation("UserCreator")
+  deliveries      Delivery[]      @relation("RecordedBy")
+  payments        Payment[]       @relation("ProcessedBy")
+  activityLogs    ActivityLog[]
+  collectionCenter CollectionCenter? @relation(fields: [collectionCenterId], references: [id])
+  collectionCenterId String?
+
+  @@map("users")
+}
+
+model Farmer {
+  id        String   @id @default(cuid())
+  farmerId  String   @unique // Unique farmer ID
+  name      String
+  phone     String
+  email     String?
+  location  String
+  address   String?
+  
+  // Bank details
+  bankName      String?
+  accountNumber String?
+  accountName   String?
+  
+  // Farmer details
+  pricePerL     Float   @default(300)
+  isActive      Boolean @default(true)
+  joinDate      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  collectionCenter   CollectionCenter @relation(fields: [collectionCenterId], references: [id])
+  collectionCenterId String
+  deliveries         Delivery[]
+  payments           Payment[]
+
+  @@map("farmers")
+}
+
+model CollectionCenter {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  location  String
+  address   String?
+  phone     String?
+  manager   String?
+  capacity  Float?   // in liters
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  farmers    Farmer[]
+  deliveries Delivery[]
+  users      User[]
+
+  @@map("collection_centers")
+}
+
+model Delivery {
+  id        String   @id @default(cuid())
+  farmerId  String
+  quantity  Float
+  
+  // Quality parameters
+  fatContent    Float?
+  snf           Float?  // Solid Not Fat
+  density       Float?
+  temperature   Float?
+  ph            Float?
+  quality       QualityGrade @default(GOOD)
+  
+  date          DateTime @default(now())
+  collectionTime String?
+  notes         String?
+  
+  // Relations
+  farmer              Farmer           @relation(fields: [farmerId], references: [id])
+  collectionCenter    CollectionCenter @relation(fields: [collectionCenterId], references: [id])
+  collectionCenterId  String
+  recordedBy          User             @relation("RecordedBy", fields: [recordedById], references: [id])
+  recordedById        String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("deliveries")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  farmerId      String
+  period        String        // e.g., "2024-01"
+  totalQuantity Float
+  totalAmount   Float
+  ratePerLiter  Float
+  status        PaymentStatus @default(PENDING)
+  paymentDate   DateTime?
+  dueDate       DateTime
+  
+  // Payment details
+  paymentMethod String?
+  referenceNo   String?
+  notes         String?
+  
+  // Relations
+  farmer        Farmer @relation(fields: [farmerId], references: [id])
+  processedBy   User?  @relation("ProcessedBy", fields: [processedById], references: [id])
+  processedById String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String   // e.g., "farmer", "delivery", "payment"
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model SMSLog {
+  id        String    @id @default(cuid())
+  phone     String
+  message   String
+  status    SMSStatus @default(PENDING)
+  provider  String?
+  messageId String?
+  error     String?
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("sms_logs")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  OPERATOR
+  VIEWER
+}
+
+enum QualityGrade {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum SMSStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
