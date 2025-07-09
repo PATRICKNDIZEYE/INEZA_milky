@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { 
@@ -24,10 +24,24 @@ interface User {
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
+  const [header,setHeader] = useState("")
 
   useEffect(() => {
     fetchUser()
   }, [])
+
+  const pathname = usePathname()
+
+  useEffect(()=>{
+    if(pathname === "/ "){
+      setHeader("HOME")
+      
+    }
+    else if (pathname === "/collections"){
+      setHeader("Manage Collections")
+    }
+  },[])
+  
 
   const fetchUser = async () => {
     try {
@@ -51,13 +65,20 @@ export function Header() {
     }
   }
 
+  
+
+  
+
+
+  
+
   return (
     <header className="lg:ml-64 bg-white shadow-sm border-b border-gray-200">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 sm:truncate">
-              Dairy Management System
+            <h1 className="text-2xl font-bold text-tertiary sm:truncate">
+             {header}
             </h1>
           </div>
           

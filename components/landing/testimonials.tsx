@@ -8,35 +8,43 @@ import { Button } from '@/components/ui/button';
 const testimonials = [
   {
     id: 1,
-    name: 'Sarah Johnson',
-    role: 'Regular Customer',
-    image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    name: 'Jean de Dieu Niyonzima',
+    role: 'Dairy Farmer, Musanze District',
+    image: '/testimonials/farmer-1.jpg',
     rating: 5,
-    comment: 'The quality of milk is exceptional! Fresh delivery every morning and the taste is incredible. My family loves it.',
+    comment: 'Since partnering with Rwanda Dairy, my income has increased by 40%. Their fair pricing and regular collection schedule have transformed my small farm into a thriving business.',
   },
   {
     id: 2,
-    name: 'Michael Chen',
-    role: 'Business Owner',
-    image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    name: 'Marie Claire Uwimana',
+    role: 'Restaurant Owner, Kigali',
+    image: '/testimonials/chef-1.jpg',
     rating: 5,
-    comment: 'As a café owner, I need reliable dairy suppliers. Their consistency and quality have made them our go-to partner.',
+    comment: 'The quality of milk we get is exceptional. Our customers always compliment the rich taste of our yogurts and cheeses made with Rwanda Dairy products.',
   },
   {
     id: 3,
-    name: 'Emma Williams',
-    role: 'Health Enthusiast',
-    image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    name: 'Emmanuel Ntaganda',
+    role: 'Cooperative Leader, Nyabihu',
+    image: '/testimonials/coop-leader.jpg',
     rating: 5,
-    comment: 'Organic, fresh, and delivered on time. The subscription service is perfect for my healthy lifestyle.',
+    comment: 'The training and support from Rwanda Dairy have helped our cooperative improve milk quality and increase production. We\'re proud to be part of their network.',
   },
   {
     id: 4,
-    name: 'David Rodriguez',
-    role: 'Family Man',
-    image: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    name: 'Josiane Mukamana',
+    role: 'Mother of Three, Gasabo',
+    image: '/testimonials/mother-1.jpg',
     rating: 5,
-    comment: 'Three kids and they all love the flavored milk varieties. Great service and competitive pricing.',
+    comment: 'My children love the fresh milk, and I love knowing it comes from local farmers. The home delivery service makes my life so much easier!',
+  },
+  {
+    id: 5,
+    name: 'Dr. Samuel Mugisha',
+    role: 'Nutritionist, Kigali',
+    image: '/testimonials/nutritionist.jpg',
+    rating: 5,
+    comment: 'Rwanda Dairy products are a staple in my nutritional recommendations. Their commitment to quality and purity makes them the best choice for healthy dairy consumption.',
   },
 ];
 
@@ -60,19 +68,26 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-sky-50 to-white">
+    <section id="testimonials" className="py-20 bg-gradient-to-br from-white to-rwanda-sky/30 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-rwanda-blue/5 rounded-full -mr-32 -mt-32"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-rwanda-green/5 rounded-full -ml-64 -mb-64"></div>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-16 relative z-10"
         >
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-rwanda-yellow/10 text-rwanda-yellow text-sm font-medium mb-4">
+            <Star className="w-4 h-4 mr-2 fill-current" />
+            Testimonials
+          </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            What Our Customers Say
+            Voices from Our <span className="text-rwanda-blue">Rwandan</span> Community
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Join thousands of satisfied customers who trust us for their daily dairy needs
+            Hear from farmers, business owners, and families who are part of Rwanda's dairy revolution
           </p>
         </motion.div>
 
@@ -87,30 +102,43 @@ export default function Testimonials() {
             className="bg-white rounded-3xl p-8 md:p-12 shadow-xl"
           >
             <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 relative">
+                <div className="absolute -inset-1 bg-rwanda-blue/20 rounded-full blur-md"></div>
                 <img
                   src={testimonials[currentIndex].image}
                   alt={testimonials[currentIndex].name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-sky-100"
+                  className="relative w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                  onError={(e) => {
+                    // Fallback to a placeholder if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/testimonials/placeholder.jpg';
+                  }}
                 />
               </div>
               
               <div className="flex-1 text-center md:text-left">
-                <div className="flex justify-center md:justify-start mb-4">
+                <div className="flex justify-center md:justify-start mb-3">
                   {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star key={i} className="w-5 h-5 text-rwanda-yellow fill-current" />
                   ))}
                 </div>
                 
-                <blockquote className="text-lg md:text-xl text-gray-700 mb-6 italic">
-                  "{testimonials[currentIndex].comment}"
+                <blockquote className="relative text-lg text-gray-700 mb-6 px-6 py-4 bg-white/50 rounded-lg">
+                  <svg 
+                    className="absolute top-4 left-0 w-8 h-8 text-rwanda-blue/20" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                  <p className="relative z-10">"{testimonials[currentIndex].comment}"</p>
                 </blockquote>
                 
                 <div>
-                  <div className="font-semibold text-gray-900 text-lg">
+                  <div className="font-medium text-gray-900">
                     {testimonials[currentIndex].name}
                   </div>
-                  <div className="text-sky-600">
+                  <div className="text-rwanda-blue font-medium">
                     {testimonials[currentIndex].role}
                   </div>
                 </div>
@@ -119,74 +147,46 @@ export default function Testimonials() {
           </motion.div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-center gap-4 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={prevTestimonial}
-              className="rounded-full w-12 h-12 p-0"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={nextTestimonial}
-              className="rounded-full w-12 h-12 p-0"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-          </div>
+          <button
+            onClick={prevTestimonial}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 p-3 rounded-full bg-white shadow-lg text-rwanda-blue hover:bg-rwanda-blue/5 focus:outline-none focus:ring-2 focus:ring-rwanda-blue/50 focus:ring-offset-2 transition-all duration-200 hover:scale-110"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            onClick={nextTestimonial}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 p-3 rounded-full bg-white shadow-lg text-rwanda-blue hover:bg-rwanda-blue/5 focus:outline-none focus:ring-2 focus:ring-rwanda-blue/50 focus:ring-offset-2 transition-all duration-200 hover:scale-110"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
 
           {/* Dots Indicator */}
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center mt-12 space-x-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-sky-500' : 'bg-gray-300'
+                className={`w-12 h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? 'bg-rwanda-blue w-8' : 'bg-gray-200'
                 }`}
+                aria-label={`Go to testimonial ${index + 1}`}
               />
             ))}
           </div>
-        </div>
 
-        {/* Testimonial Grid Preview */}
-        <div className="grid md:grid-cols-3 gap-6 mt-16">
-          {testimonials.slice(0, 3).map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+          <div className="mt-12 text-center">
+            <Button 
+              variant="outline" 
+              className="border-rwanda-blue text-rwanda-blue hover:bg-rwanda-blue/5 hover:border-rwanda-blue/80 hover:text-rwanda-blue/90"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                  <div className="text-sm text-gray-600">{testimonial.role}</div>
-                </div>
-              </div>
-              
-              <div className="flex mb-3">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {testimonial.comment.length > 100 
-                  ? `${testimonial.comment.substring(0, 100)}...` 
-                  : testimonial.comment}
-              </p>
-            </motion.div>
-          ))}
+              <a href="/register" className="flex items-center">
+                Share Your Story
+                <ChevronRight className="ml-2 w-4 h-4" />
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

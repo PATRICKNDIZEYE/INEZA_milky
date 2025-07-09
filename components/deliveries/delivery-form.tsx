@@ -15,6 +15,7 @@ interface Farmer {
   name: string
   phone: string
   pricePerL: number
+  collectionCenterId: string
 }
 
 interface DeliveryFormProps {
@@ -25,11 +26,22 @@ export function DeliveryForm({ onSuccess }: DeliveryFormProps) {
   const [loading, setLoading] = useState(false)
   const [farmers, setFarmers] = useState<Farmer[]>([])
   const [selectedFarmerId, setSelectedFarmerId] = useState<string>('')
+  const [selectedCollectionCenterId, setSelectedCollectionCenterId] = useState<string>('')
   const { toast } = useToast()
 
   useEffect(() => {
     fetchFarmers()
   }, [])
+
+  useEffect(() => {
+    // When farmer changes, set the collectionCenterId
+    const farmer = farmers.find(f => f.id === selectedFarmerId)
+    if (farmer && farmer.collectionCenterId) {
+      setSelectedCollectionCenterId(farmer.collectionCenterId)
+    } else {
+      setSelectedCollectionCenterId('')
+    }
+  }, [selectedFarmerId, farmers])
 
   async function fetchFarmers() {
     try {
@@ -52,7 +64,8 @@ export function DeliveryForm({ onSuccess }: DeliveryFormProps) {
       farmerId: selectedFarmerId,
       quantity: parseFloat(formData.get('quantity') as string),
       quality: formData.get('quality') as string,
-      notes: formData.get('notes') as string
+      notes: formData.get('notes') as string,
+      collectionCenterId: selectedCollectionCenterId,
     }
 
     try {

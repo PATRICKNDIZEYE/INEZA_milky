@@ -15,7 +15,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const isHome = pathname === '/'
   const isLoginPage = pathname === '/login'
+
+
 
   if (isLoginPage) {
     return (

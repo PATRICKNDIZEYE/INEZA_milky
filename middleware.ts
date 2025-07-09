@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const publicRoutes = ['/login', '/api/auth/login']
+  const publicRoutes = ['/login', '/api/debug/env', '/api/auth/login']
 
   if (publicRoutes.includes(pathname)) {
     console.log('[MIDDLEWARE] Public route:', pathname)
@@ -50,5 +50,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/api/debug/env',
   ],
 }

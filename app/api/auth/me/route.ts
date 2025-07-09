@@ -34,3 +34,32 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { name, email, phone } = await request.json();
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { name, email, phone },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        lastLogin: true
+      }
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error('Failed to update user:', error);
+    return NextResponse.json(
+      { error: 'Failed to update user' },
+      { status: 500 }
+    );
+  }
+}
