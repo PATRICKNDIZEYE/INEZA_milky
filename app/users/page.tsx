@@ -170,6 +170,10 @@ export default function UsersPage() {
 
   return (
     <div className="p-8 relative">
+
+<div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">User Management</h1>
+      </div>
       {/* Search Bar */}
       <div className="mb-4 max-w-xs">
         <Input
@@ -189,9 +193,7 @@ export default function UsersPage() {
         <span className="hidden md:inline font-semibold">Add User</span>
       </button>
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
-      </div>
+     
       <div className="bg-white shadow rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0 z-10">

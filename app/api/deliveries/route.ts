@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendSMS, formatDeliveryNotification } from '@/lib/sms'
+import SmsService, { formatDeliveryNotificationKinyarwanda } from '@/lib/sms'
 import { format } from 'date-fns'
 import { jwtVerify } from 'jose'
 
@@ -103,12 +103,30 @@ export async function POST(request: NextRequest) {
     const delivery = await prisma.delivery.create({
       data: deliveryData,
       include: {
-        farmer: { select: { name: true, farmerId: true } },
+        farmer: { select: { name: true, farmerId: true, phone: true } },
         collectionCenter: { select: { name: true } },
       },
     });
     
     console.log('Successfully created delivery:', delivery.id);
+    
+    // Send SMS notification in Kinyarwanda
+    try {
+      if (delivery.farmer.phone) {
+        const message = formatDeliveryNotificationKinyarwanda(
+          delivery.farmer.name,
+          delivery.quantity,
+          format(new Date(delivery.date), 'dd/MM/yyyy')
+        );
+        
+        await SmsService.sendSms(delivery.farmer.phone, message);
+        console.log('SMS notification sent successfully to farmer');
+      }
+    } catch (smsError) {
+      console.error('Failed to send SMS notification:', smsError);
+      // Don't fail the delivery creation if SMS fails
+    }
+    
     return NextResponse.json(delivery, { status: 201 });
     
   } catch (error: any) {

@@ -168,14 +168,7 @@ export default function CollectionCentersPage() {
   return (
     <div className="p-8 relative">
       {/* Search Bar */}
-      <div className="mb-4 max-w-xs">
-        <Input
-          placeholder="Search collection centers..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+     
       {/* Floating Add Center Button */}
       <button
         onClick={handleAdd}
@@ -188,6 +181,15 @@ export default function CollectionCentersPage() {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Collection Centers</h1>
+      </div>
+
+      <div className="mb-4 max-w-xs">
+        <Input
+          placeholder="Search collection centers..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-10"
+        />
       </div>
       <div className="bg-white shadow rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfMonth, endOfMonth, addDays, subDays, isWithinInterval } from 'date-fns';
 import * as XLSX from 'xlsx';
+import { toast } from 'react-hot-toast';
 
 interface Farmer {
   id: string;
@@ -42,6 +43,7 @@ export default function PaymentsPage() {
   const [periodEnd, setPeriodEnd] = useState<Date>(addDays(startOfMonth(new Date()), 14));
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
     fetchFarmers();
@@ -90,6 +92,41 @@ export default function PaymentsPage() {
       paid: !!payment,
     };
   });
+
+  // Select all logic
+  const allIds = paymentRows.filter(row => !row.paid && row.totalLiters > 0).map(row => row.farmer.id);
+  const allSelected = allIds.length > 0 && allIds.every(id => selected.includes(id));
+  const toggleSelectAll = () => {
+    setSelected(allSelected ? [] : allIds);
+  };
+  const toggleSelect = (id: string) => {
+    setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]);
+  };
+
+  // Bulk mark as paid
+  const markSelectedAsPaid = async () => {
+    for (const id of selected) {
+      const row = paymentRows.find(r => r.farmer.id === id);
+      if (row && !row.paid && row.totalLiters > 0) {
+        await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            farmerId: row.farmer.id,
+            period: format(periodStart, 'yyyy-MM-dd'),
+            totalLiters: row.totalLiters,
+            totalAmount: row.totalAmount,
+            pricePerL: row.farmer.pricePerL,
+          })
+        });
+      }
+    }
+    toast.success('Selected payments marked as paid!');
+    setSelected([]);
+    // Refresh payments
+    const res = await fetch(`/api/payments?start=${format(periodStart, 'yyyy-MM-dd')}&end=${format(periodEnd, 'yyyy-MM-dd')}`);
+    if (res.ok) setPayments(await res.json());
+  };
 
   const markAsPaid = async (row: any) => {
     await fetch('/api/payments', {
@@ -156,10 +193,20 @@ export default function PaymentsPage() {
           <CardTitle>Payments for {format(periodStart, 'MMM d, yyyy')} - {format(periodEnd, 'MMM d, yyyy')}</CardTitle>
         </CardHeader>
         <CardContent>
+          {selected.length > 0 && (
+            <div className="mb-4 flex items-center gap-4">
+              <span className="font-medium">{selected.length} selected</span>
+              <Button size="sm" onClick={markSelectedAsPaid}>Mark Selected as Paid</Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelected([])}>Clear</Button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-2 py-2 text-center">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+                  </th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Farmer</th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Total Liters</th>
                   <th className="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Price/Liter</th>
@@ -170,12 +217,20 @@ export default function PaymentsPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
-                  <tr><td colSpan={6} className="text-center py-8">Loading...</td></tr>
+                  <tr><td colSpan={7} className="text-center py-8">Loading...</td></tr>
                 ) : paymentRows.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-8">No farmers found.</td></tr>
+                  <tr><td colSpan={7} className="text-center py-8">No farmers found.</td></tr>
                 ) : (
                   paymentRows.map(row => (
                     <tr key={row.farmer.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(row.farmer.id)}
+                          onChange={() => toggleSelect(row.farmer.id)}
+                          disabled={row.paid || row.totalLiters === 0}
+                        />
+                      </td>
                       <td className="px-4 py-2 whitespace-nowrap">{row.farmer.name} ({row.farmer.farmerId})</td>
                       <td className="px-4 py-2 whitespace-nowrap">{row.totalLiters}</td>
                       <td className="px-4 py-2 whitespace-nowrap">{row.farmer.pricePerL} RWF</td>

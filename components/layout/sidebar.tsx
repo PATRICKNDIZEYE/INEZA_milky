@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -28,8 +28,12 @@ import {
   HelpCircle,
   MapPin,
   Leaf,
-  Sun
+  Sun,
+  ChevronLeft,
+  ChevronRight,
+  MessageSquare
 } from 'lucide-react';
+import Image from 'next/image';
 
 const navigation = [
   { 
@@ -81,13 +85,13 @@ const navigation = [
     color: 'text-amber-600',
     bgColor: 'bg-amber-100'
   },
-  { 
-    name: 'System Logs', 
-    href: '/logs', 
-    icon: FileText,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100'
-  },
+  // { 
+  //   name: 'System Logs', 
+  //   href: '/logs', 
+  //   icon: FileText,
+  //   color: 'text-gray-600',
+  //   bgColor: 'bg-gray-100'
+  // },
 ];
 
 const secondaryNavigation = [
@@ -99,16 +103,39 @@ const secondaryNavigation = [
     bgColor: 'bg-gray-100'
   },
   { 
-    name: 'Help & Support', 
-    href: '/help', 
-    icon: HelpCircle,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100'
+    name: 'SMS Test', 
+    href: '/admin/sms-test', 
+    icon: MessageSquare,
+    color: 'text-green-600',
+    bgColor: 'bg-green-100'
   },
+  // { 
+  //   name: 'Help & Support', 
+  //   href: '/help', 
+  //   icon: HelpCircle,
+  //   color: 'text-blue-600',
+  //   bgColor: 'bg-blue-100'
+  // },
 ];
+
+export const SidebarContext = createContext({ collapsed: false, setCollapsed: (v: boolean) => {} });
+
+export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}
+
+export function useSidebar() {
+  return useContext(SidebarContext);
+}
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { collapsed, setCollapsed } = useSidebar();
   const pathname = usePathname()
 
   return (
@@ -128,31 +155,25 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-40 w-72 bg-white/95 backdrop-blur-sm shadow-xl transform transition-transform duration-200 ease-in-out lg:translate-x-0 border-r border-gray-100",
-        isOpen ? "translate-x-0" : "-translate-x-full"
+        collapsed
+          ? "fixed inset-y-0 left-0 z-40 w-20 bg-white/95 backdrop-blur-sm shadow-xl border-r border-gray-100 transition-all duration-200"
+          : "fixed inset-y-0 left-0 z-40 w-72 bg-white/95 backdrop-blur-sm shadow-xl border-r border-gray-100 transition-all duration-200",
+        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-20 px-6 border-b border-gray-100">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-rwanda-blue flex items-center justify-center">
-                <Milk className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-rwanda-blue">Rwanda Dairy</span>
-            </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="lg:hidden p-1 rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className={collapsed ? "flex flex-col items-center justify-center h-12 px-2 border-b border-gray-100 bg-white" : "flex flex-col items-center justify-center h-20 px-6 border-b border-gray-100 bg-white"}>
+            <span className="flex items-center justify-center">
+              <Milk className={collapsed ? "w-10 h-10 text-rwanda-blue" : "w-16 h-10 text-rwanda-blue"} />
+              {!collapsed && <span className="ml-3 text-2xl font-extrabold tracking-wide text-rwanda-blue">INEZA DAIRY</span>}
+            </span>
           </div>
-          
+          <div className="border-b border-gray-100 mb-2" />
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-            <div className="px-3 mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Main Menu
+          <nav className="flex-1 px-1 py-6 space-y-1 overflow-y-auto">
+          <div className={collapsed ? "px-1 mt-8 mb-6" : "px-3 mt-8 mb-6"}>
+              <h3 className={collapsed ? "text-[10px] font-semibold text-gray-400 uppercase tracking-wider" : "text-xs font-semibold text-gray-500 uppercase tracking-wider"}>
+                Navigate
               </h3>
             </div>
             
@@ -163,7 +184,7 @@ export function Sidebar() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg mx-2 transition-colors group",
+                    "flex items-center px-2 py-3 text-sm font-medium rounded-lg mx-1 transition-colors group",
                     isActive 
                       ? `bg-rwanda-blue/5 text-rwanda-blue font-medium` 
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -171,27 +192,25 @@ export function Sidebar() {
                   onClick={() => setIsOpen(false)}
                 >
                   <span className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-colors",
+                    "w-10 h-10 rounded-lg flex items-center justify-center mr-0 transition-colors",
                     isActive 
                       ? `${item.bgColor} ${item.color}`
                       : "text-gray-400 group-hover:bg-gray-100"
                   )}>
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-6 w-6" />
                   </span>
-                  {item.name}
-                  {isActive && (
+                  {!collapsed && <span className="ml-3">{item.name}</span>}
+                  {isActive && !collapsed && (
                     <span className="ml-auto w-1.5 h-6 bg-rwanda-blue rounded-full"></span>
                   )}
                 </Link>
               );
             })}
-            
-            <div className="px-3 mt-8 mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className={collapsed ? "px-1 mt-8 mb-6" : "px-3 mt-8 mb-6"}>
+              <h3 className={collapsed ? "text-[10px] font-semibold text-gray-400 uppercase tracking-wider" : "text-xs font-semibold text-gray-500 uppercase tracking-wider"}>
                 Account
               </h3>
             </div>
-            
             {secondaryNavigation.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
@@ -199,7 +218,7 @@ export function Sidebar() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg mx-2 transition-colors group",
+                    "flex items-center px-2 py-3 text-sm font-medium rounded-lg mx-1 transition-colors group",
                     isActive 
                       ? `bg-rwanda-blue/5 text-rwanda-blue font-medium` 
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -207,37 +226,26 @@ export function Sidebar() {
                   onClick={() => setIsOpen(false)}
                 >
                   <span className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-colors",
+                    "w-10 h-10 rounded-lg flex items-center justify-center mr-0 transition-colors",
                     isActive 
                       ? `${item.bgColor} ${item.color}`
                       : "text-gray-400 group-hover:bg-gray-100"
                   )}>
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-6 w-6" />
                   </span>
-                  {item.name}
+                  {!collapsed && <span className="ml-3">{item.name}</span>}
+                  {isActive && !collapsed && (
+                    <span className="ml-auto w-1.5 h-6 bg-rwanda-blue rounded-full"></span>
+                  )}
                 </Link>
               );
             })}
-            
-            <div className="mt-8 pt-6 border-t border-gray-100 mx-4">
-              <button className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                <LogOut className="w-5 h-5 mr-3 text-gray-400" />
-                Logout
-              </button>
-            </div>
           </nav>
-          
-          {/* User profile */}
-          <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-rwanda-blue/10 flex items-center justify-center text-rwanda-blue">
-                <User className="w-5 h-5" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">admin@rwandadairy.rw</p>
-              </div>
-            </div>
+          {/* Collapse/Expand Button */}
+          <div className="flex items-center justify-center py-4 border-t border-gray-100">
+            <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)}>
+              {collapsed ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
       </div>

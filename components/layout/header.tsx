@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
-import { Bell, LogOut, User, Settings } from 'lucide-react'
+import { Bell, LogOut, User, Settings, Milk } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import Image from 'next/image';
 
 interface User {
   id: string
@@ -73,15 +74,21 @@ export function Header() {
   
 
   return (
-    <header className="lg:ml-64 bg-white shadow-sm border-b border-gray-200">
+    <header className="lg:ml-64  ">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-1 min-w-0">
+          {/* Logo and Title */}
+          <div className="flex items-center min-w-0 gap-4">
+            {/* Show branding in header only if sidebar is collapsed (w-20) */}
+            <span className="block lg:hidden flex items-center">
+              <Milk className="w-8 h-8 text-rwanda-blue" />
+              <span className="ml-2 text-xl font-extrabold tracking-wide text-rwanda-blue">INEZA DAIRY</span>
+            </span>
             <h1 className="text-2xl font-bold text-tertiary sm:truncate">
-             {header}
+              {header}
             </h1>
           </div>
-          
+          {/* User Actions */}
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" className="relative">
               <Bell className="h-5 w-5" />
@@ -113,11 +120,11 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <a href='/settings'><span>Profile</span></a>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  <a href='/settings'><span>Settings</span></a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

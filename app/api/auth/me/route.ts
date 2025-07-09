@@ -1,14 +1,32 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jwtVerify } from 'jose'
+
+function getTokenFromCookies(request: NextRequest) {
+  const token = request.cookies.get('auth-token')?.value;
+  return token || null;
+}
+
+async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
+  try {
+    const token = getTokenFromCookies(request);
+    if (!token) return null;
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return null;
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+    return payload.userId as string;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')
+    const userId = await getUserIdFromRequest(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -20,11 +38,9 @@ export async function GET(request: NextRequest) {
         lastLogin: true
       }
     })
-
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-
     return NextResponse.json(user)
   } catch (error) {
     console.error('Failed to fetch user:', error)
@@ -37,14 +53,20 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getUserIdFromRequest(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const { name, email, phone } = await request.json();
+    const { name, email, phone, password } = await request.json();
+    const data: any = { name, email, phone };
+    if (password) {
+      // Hash password if provided
+      const { hashPassword } = await import('@/lib/auth');
+      data.password = await hashPassword(password);
+    }
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { name, email, phone },
+      data,
       select: {
         id: true,
         name: true,
