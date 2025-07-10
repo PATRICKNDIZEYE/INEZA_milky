@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import SmsService, { formatDeliveryNotificationKinyarwanda } from '@/lib/sms'
 import { format } from 'date-fns'
 import { jwtVerify } from 'jose'
+import { requireOperatorOrAbove, getDeliveryFilter } from '@/lib/auth'
 
 async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
   try {
@@ -43,7 +44,14 @@ async function getUserIdFromRequest(request: NextRequest): Promise<string | null
 
 export async function GET(request: NextRequest) {
   try {
+    // Get authenticated user with role check
+    const user = await requireOperatorOrAbove(request);
+    
+    // Get collection center filter based on user role
+    const collectionCenterFilter = getDeliveryFilter(user);
+    
     const deliveries = await prisma.delivery.findMany({
+      where: collectionCenterFilter,
       orderBy: { date: 'desc' },
       include: {
         farmer: { select: { name: true, farmerId: true } },
@@ -51,8 +59,14 @@ export async function GET(request: NextRequest) {
       },
     })
     return NextResponse.json(deliveries)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch deliveries:', error)
+    if (error.message === 'Authentication required') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    if (error.message === 'Insufficient permissions') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
     return NextResponse.json({ error: 'Failed to fetch deliveries' }, { status: 500 })
   }
 }

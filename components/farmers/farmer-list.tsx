@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { FarmerForm } from './farmer-form'
+import { AddFarmerForm, EditFarmerForm } from './farmer-form'
 import { Edit, Trash2, Phone, MapPin, Building2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
@@ -13,15 +13,41 @@ interface Farmer {
   farmerId: string
   name: string
   phone: string
+  email?: string
   location: string
-  isActive: boolean
+  address?: string
+  bankName?: string
+  accountNumber?: string
+  accountName?: string
   pricePerL: number
+  isActive: boolean
+  joinDate?: string
+  createdAt?: string
+  updatedAt?: string
+  collectionCenterId: string
   collectionCenter: {
     name: string
+    code: string
   }
   _count: {
     deliveries: number
   }
+}
+
+interface FarmerEdit {
+  id: string
+  farmerId: string
+  name: string
+  phone: string
+  email?: string
+  location: string
+  address?: string
+  bankName?: string
+  accountNumber?: string
+  accountName?: string
+  pricePerL: string
+  collectionCenterId: string
+  isActive: boolean
 }
 
 interface FarmerListProps {
@@ -30,7 +56,8 @@ interface FarmerListProps {
 }
 
 export function FarmerList({ farmers, onUpdate }: FarmerListProps) {
-  const [editingFarmer, setEditingFarmer] = useState<Farmer | null>(null)
+  const [editingFarmer, setEditingFarmer] = useState<FarmerEdit | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   const handleDelete = async (farmerId: string) => {
     if (!confirm('Are you sure you want to delete this farmer?')) return
@@ -70,6 +97,26 @@ export function FarmerList({ farmers, onUpdate }: FarmerListProps) {
     }
   }
 
+  const getCompleteFarmer = (farmer: Farmer): FarmerEdit => {
+    const result = {
+      id: farmer.id,
+      farmerId: farmer.farmerId,
+      name: farmer.name ?? '',
+      phone: farmer.phone ?? '',
+      email: farmer.email ?? '',
+      location: farmer.location ?? '',
+      address: farmer.address ?? '',
+      bankName: farmer.bankName ?? '',
+      accountNumber: farmer.accountNumber ?? '',
+      accountName: farmer.accountName ?? '',
+      pricePerL: farmer.pricePerL !== undefined && farmer.pricePerL !== null ? String(farmer.pricePerL) : '300',
+      collectionCenterId: farmer.collectionCenterId ?? '',
+      isActive: farmer.isActive ?? true
+    };
+    console.log('Editing farmer:', result);
+    return result;
+  }
+
   if (farmers.length === 0) {
     return (
       <Card>
@@ -82,6 +129,9 @@ export function FarmerList({ farmers, onUpdate }: FarmerListProps) {
 
   return (
     <>
+      <Button className="mb-4" onClick={() => setShowAddModal(true)}>
+        + Add Farmer
+      </Button>
       <div className="grid gap-4">
         {farmers.map((farmer) => (
           <Card key={farmer.id} className="hover:shadow-md transition-shadow">
@@ -130,7 +180,7 @@ export function FarmerList({ farmers, onUpdate }: FarmerListProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setEditingFarmer(farmer)}
+                    onClick={() => setEditingFarmer(getCompleteFarmer(farmer))}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -156,8 +206,17 @@ export function FarmerList({ farmers, onUpdate }: FarmerListProps) {
         ))}
       </div>
 
+      {showAddModal && (
+        <AddFarmerForm
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false)
+            onUpdate()
+          }}
+        />
+      )}
       {editingFarmer && (
-        <FarmerForm
+        <EditFarmerForm
           farmer={editingFarmer}
           onClose={() => setEditingFarmer(null)}
           onSuccess={() => {

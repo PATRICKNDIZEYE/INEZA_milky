@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { FarmerForm } from '@/components/farmers/farmer-form'
+import { AddFarmerForm } from '@/components/farmers/farmer-form'
 import { FarmerList } from '@/components/farmers/farmer-list'
 import { BulkImport } from '@/components/farmers/bulk-import'
 import { Plus, Search, Upload, Download } from 'lucide-react'
@@ -167,7 +167,7 @@ export default function FarmersPage() {
 
       {/* Modals */}
       {showForm && (
-        <FarmerForm
+        <AddFarmerForm
           onClose={() => setShowForm(false)}
           onSuccess={() => {
             setShowForm(false)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -35,88 +35,131 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-const navigation = [
+// Define navigation items with role restrictions
+const allNavigationItems = [
   { 
     name: 'Dashboard', 
     href: '/dashboard', 
     icon: Home,
     color: 'text-rwanda-blue',
-    bgColor: 'bg-rwanda-blue/10'
+    bgColor: 'bg-rwanda-blue/10',
+    roles: ['ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER']
   },
   { 
     name: 'Farmers', 
     href: '/farmers', 
     icon: Users,
     color: 'text-rwanda-green',
-    bgColor: 'bg-rwanda-green/10'
+    bgColor: 'bg-rwanda-green/10',
+    roles: ['ADMIN', 'MANAGER', 'OPERATOR']
   },
   { 
     name: 'Collections', 
     href: '/collections', 
     icon: Package,
     color: 'text-rwanda-yellow',
-    bgColor: 'bg-rwanda-yellow/10'
+    bgColor: 'bg-rwanda-yellow/10',
+    roles: ['ADMIN', 'MANAGER', 'OPERATOR']
   },
   { 
     name: 'Payments', 
     href: '/payments', 
     icon: DollarSign,
     color: 'text-green-600',
-    bgColor: 'bg-green-100'
+    bgColor: 'bg-green-100',
+    roles: ['ADMIN', 'MANAGER', 'OPERATOR']
   },
   { 
     name: 'Collection Centers', 
     href: '/collection-centers', 
     icon: MapPin,
     color: 'text-purple-600',
-    bgColor: 'bg-purple-100'
+    bgColor: 'bg-purple-100',
+    roles: ['ADMIN', 'MANAGER']
   },
   { 
     name: 'Reports', 
     href: '/reports', 
     icon: BarChart3,
     color: 'text-blue-600',
-    bgColor: 'bg-blue-100'
+    bgColor: 'bg-blue-100',
+    roles: ['ADMIN', 'MANAGER', 'VIEWER']
   },
   { 
     name: 'User Management', 
     href: '/users', 
     icon: UserCog,
     color: 'text-amber-600',
-    bgColor: 'bg-amber-100'
+    bgColor: 'bg-amber-100',
+    roles: ['ADMIN']
   },
-  // { 
-  //   name: 'System Logs', 
-  //   href: '/logs', 
-  //   icon: FileText,
-  //   color: 'text-gray-600',
-  //   bgColor: 'bg-gray-100'
-  // },
 ];
 
-const secondaryNavigation = [
+const allSecondaryNavigationItems = [
   { 
     name: 'Settings', 
     href: '/settings', 
     icon: Settings,
     color: 'text-gray-600',
-    bgColor: 'bg-gray-100'
+    bgColor: 'bg-gray-100',
+    roles: ['ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER']
   },
   { 
     name: 'SMS Test', 
     href: '/admin/sms-test', 
     icon: MessageSquare,
     color: 'text-green-600',
-    bgColor: 'bg-green-100'
+    bgColor: 'bg-green-100',
+    roles: ['ADMIN']
   },
-  // { 
-  //   name: 'Help & Support', 
-  //   href: '/help', 
-  //   icon: HelpCircle,
-  //   color: 'text-blue-600',
-  //   bgColor: 'bg-blue-100'
-  // },
 ];
+
+// User context for role-based access
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  collectionCenterId?: string;
+}
+
+const UserContext = createContext<{ user: User | null; loading: boolean }>({ 
+  user: null, 
+  loading: true 
+});
+
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  return (
+    <UserContext.Provider value={{ user, loading }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+export function useUser() {
+  return useContext(UserContext);
+}
 
 export const SidebarContext = createContext({ collapsed: false, setCollapsed: (v: boolean) => {} });
 
@@ -136,7 +179,27 @@ export function useSidebar() {
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const { collapsed, setCollapsed } = useSidebar();
+  const { user, loading } = useUser();
   const pathname = usePathname()
+
+  // Filter navigation based on user role
+  const navigation = allNavigationItems.filter(item => 
+    user && item.roles.includes(user.role)
+  );
+
+  const secondaryNavigation = allSecondaryNavigationItems.filter(item => 
+    user && item.roles.includes(user.role)
+  );
+
+  if (loading) {
+    return (
+      <div className="fixed inset-y-0 left-0 z-40 w-72 bg-white/95 backdrop-blur-sm shadow-xl border-r border-gray-100">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rwanda-blue"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -169,6 +232,22 @@ export function Sidebar() {
             </span>
           </div>
           <div className="border-b border-gray-100 mb-2" />
+          
+          {/* User Info */}
+          {!collapsed && user && (
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-rwanda-blue/10 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-rwanda-blue" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Navigation */}
           <nav className="flex-1 px-1 py-6 space-y-1 overflow-y-auto">
           <div className={collapsed ? "px-1 mt-8 mb-6" : "px-3 mt-8 mb-6"}>

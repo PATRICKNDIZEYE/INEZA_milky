@@ -4,7 +4,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { usePathname } from 'next/navigation'
 import { Toaster } from 'react-hot-toast'
-import { Sidebar, SidebarProvider, useSidebar } from '@/components/layout/sidebar'
+import { Sidebar, SidebarProvider, useSidebar, UserProvider } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/header'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -90,11 +90,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SidebarProvider>
-          <Sidebar />
-          <Header />
-          <SidebarContent>{children}</SidebarContent>
-        </SidebarProvider>
+        <UserProvider>
+          <SidebarProvider>
+            <Sidebar />
+            <Header />
+            <SidebarContent>{children}</SidebarContent>
+          </SidebarProvider>
+        </UserProvider>
         <Toaster
           position="top-right"
           toastOptions={{

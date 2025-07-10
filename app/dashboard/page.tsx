@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Droplets, CreditCard, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Users, Droplets, TrendingUp, AlertTriangle, Award, FlaskConical, Milk, BarChart3 } from 'lucide-react'
 import { StatsCard } from '@/components/dashboard/stats-card'
 import { RecentActivity } from '@/components/dashboard/recent-activity'
 import { CollectionChart } from '@/components/dashboard/collection-chart'
@@ -70,28 +70,44 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Total Farmers"
           value={stats.totalFarmers}
-          subtitle={`${stats.activeFarmers} active`}
+          subtitle="Registered farmers"
           icon={Users}
           color="blue"
           trend={{ value: 12, label: 'vs last month' }}
         />
         <StatsCard
+          title="Active Farmers"
+          value={stats.activeFarmers}
+          subtitle="Active this month"
+          icon={Award}
+          color="green"
+          trend={{ value: 5, label: 'vs last month' }}
+        />
+        <StatsCard
           title="Today's Collection"
           value={`${stats.todayCollection.toLocaleString()}L`}
           subtitle="Fresh milk collected"
-          icon={Droplets}
+          icon={Milk}
           color="green"
           trend={{ value: 8, label: 'vs yesterday' }}
         />
         <StatsCard
-          title="Pending Payments"
-          value={stats.pendingPayments}
-          subtitle="Awaiting processing"
-          icon={CreditCard}
+          title="Monthly Collection"
+          value={`${stats.monthlyCollection.toLocaleString()}L`}
+          subtitle="Total this month"
+          icon={BarChart3}
+          color="blue"
+          trend={{ value: 20, label: 'vs last month' }}
+        />
+        <StatsCard
+          title="Low Quality Deliveries"
+          value={stats.lowQualityDeliveries}
+          subtitle="Require attention"
+          icon={FlaskConical}
           color="orange"
         />
         <StatsCard

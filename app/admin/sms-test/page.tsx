@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'react-hot-toast';
 
 export default function SmsTestPage() {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('0783787463');
   const [testType, setTestType] = useState('delivery');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -69,12 +69,12 @@ export default function SmsTestPage() {
             <Input
               id="phone"
               type="tel"
-              placeholder="e.g., 0781234567"
+              placeholder="e.g., 0783787463"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
             <p className="text-sm text-gray-500 mt-1">
-              Enter a valid Rwanda phone number (9 digits starting with 7)
+              Enter a valid Rwanda phone number (can start with 07 or 7).
             </p>
           </div>
 

@@ -1,7 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, UserCheck, UserX, User, Shield } from "lucide-react";
+import { Plus, Edit2, Trash2, UserCheck, UserX, User, Shield, MapPin } from "lucide-react";
 import { Input } from '@/components/ui/input';
+
+interface CollectionCenter {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+}
 
 interface User {
   id: string;
@@ -12,6 +19,8 @@ interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  collectionCenterId?: string;
+  collectionCenter?: CollectionCenter;
 }
 
 const roleColors: Record<string, string> = {
@@ -32,6 +41,7 @@ const roles = ["ADMIN", "MANAGER", "OPERATOR", "VIEWER"];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [collectionCenters, setCollectionCenters] = useState<CollectionCenter[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
@@ -44,12 +54,14 @@ export default function UsersPage() {
     password: "",
     role: "OPERATOR",
     isActive: true,
+    collectionCenterId: "",
   });
   const [formLoading, setFormLoading] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchUsers();
+    fetchCollectionCenters();
   }, []);
 
   useEffect(() => {
@@ -61,9 +73,10 @@ export default function UsersPage() {
         password: "",
         role: editUser.role,
         isActive: editUser.isActive,
+        collectionCenterId: editUser.collectionCenterId || "",
       });
     } else {
-      setForm({ name: "", email: "", username: "", password: "", role: "OPERATOR", isActive: true });
+      setForm({ name: "", email: "", username: "", password: "", role: "OPERATOR", isActive: true, collectionCenterId: "" });
     }
   }, [editUser, showModal]);
 
@@ -74,6 +87,17 @@ export default function UsersPage() {
       setUsers(await res.json());
     }
     setLoading(false);
+  };
+
+  const fetchCollectionCenters = async () => {
+    try {
+      const res = await fetch("/api/collection-centers");
+      if (res.ok) {
+        setCollectionCenters(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch collection centers:', error);
+    }
   };
 
   const handleEdit = (user: User) => {
@@ -142,6 +166,7 @@ export default function UsersPage() {
           password: form.password || undefined,
           role: form.role,
           isActive: form.isActive,
+          collectionCenterId: form.collectionCenterId || null,
         }),
       });
     } else {
@@ -202,15 +227,16 @@ export default function UsersPage() {
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Username</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Collection Center</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-8"><span className="animate-spin inline-block w-6 h-6 border-4 border-blue-400 border-t-transparent rounded-full"></span></td></tr>
+              <tr><td colSpan={7} className="text-center py-8"><span className="animate-spin inline-block w-6 h-6 border-4 border-blue-400 border-t-transparent rounded-full"></span></td></tr>
             ) : filteredUsers.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-8">No users found.</td></tr>
+              <tr><td colSpan={7} className="text-center py-8">No users found.</td></tr>
             ) : (
               filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
@@ -221,6 +247,16 @@ export default function UsersPage() {
                     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold gap-1 ${roleColors[user.role] || "bg-gray-100 text-gray-800"}`}>
                       {roleIcons[user.role] || <User className="inline w-4 h-4 mr-1" />} {user.role}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.collectionCenter ? (
+                      <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        {user.collectionCenter.name}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">Not assigned</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
@@ -288,6 +324,19 @@ export default function UsersPage() {
                   ))}
                 </select>
               </div>
+              {form.role === "OPERATOR" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Collection Center</label>
+                  <select name="collectionCenterId" value={form.collectionCenterId} onChange={handleFormChange} className="mt-1 block w-full border rounded px-3 py-2">
+                    <option value="">Select a collection center</option>
+                    {collectionCenters.map((center) => (
+                      <option key={center.id} value={center.id}>
+                        {center.name} ({center.code}) - {center.location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="flex items-center">
                 <input id="isActive" name="isActive" type="checkbox" checked={form.isActive} onChange={handleFormChange} className="mr-2" />
                 <label htmlFor="isActive" className="text-sm">Active</label>
