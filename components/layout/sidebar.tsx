@@ -104,14 +104,14 @@ const allSecondaryNavigationItems = [
     bgColor: 'bg-gray-100',
     roles: ['ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER']
   },
-  { 
-    name: 'SMS Test', 
-    href: '/admin/sms-test', 
-    icon: MessageSquare,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    roles: ['ADMIN']
-  },
+  // { 
+  //   name: 'SMS Test', 
+  //   href: '/admin/sms-test', 
+  //   icon: MessageSquare,
+  //   color: 'text-green-600',
+  //   bgColor: 'bg-green-100',
+  //   roles: ['ADMIN']
+  // },
 ];
 
 // User context for role-based access
