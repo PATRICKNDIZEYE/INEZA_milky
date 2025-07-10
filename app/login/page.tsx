@@ -309,7 +309,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-gray-600 text-sm">
-            © 2024 INEZA Dairy Management System
+            © 2025 INEZA Dairy Management System
           </p>
           <p className="text-gray-500 text-xs mt-1">
             Secure • Reliable • Professional
