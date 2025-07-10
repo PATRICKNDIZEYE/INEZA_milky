@@ -89,7 +89,7 @@ A modern, comprehensive dairy management system built with Next.js, designed to 
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/Fesiti/INEZA_milky/
 cd ineza-dairy-system
 ```
 
