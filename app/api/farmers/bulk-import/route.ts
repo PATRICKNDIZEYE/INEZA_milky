@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log activity
-    await logActivity(userId, 'BULK_IMPORT', 'farmer', null, { imported: results.imported, errors: results.errors.length }, request)
+    await logActivity(userId, 'BULK_IMPORT', 'farmer', undefined, { imported: results.imported, errors: results.errors.length }, request)
 
     return NextResponse.json(results)
   } catch (error) {

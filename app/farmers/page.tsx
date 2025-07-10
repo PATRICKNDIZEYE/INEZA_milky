@@ -20,10 +20,13 @@ interface Farmer {
   isActive: boolean
   collectionCenter: {
     name: string
+    code: string
   }
   _count: {
     deliveries: number
   }
+  pricePerL: number
+  collectionCenterId: string
 }
 
 export default function FarmersPage() {

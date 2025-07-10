@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const requestHeaders = new Headers(request.headers)
+  // @ts-expect-error: Intentionally setting object as header value
   requestHeaders.set('x-user-id', userId)
   // console.log('[MIDDLEWARE] Authenticated userId:', userId)
 
